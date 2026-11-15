@@ -8,9 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.unbosque.tallersicseven.dto.PokemonDTO;
+import co.edu.unbosque.tallersicseven.dto.PokemonListaDTO;
 import co.edu.unbosque.tallersicseven.service.PokemonService;
 
 @RestController
@@ -38,4 +40,28 @@ public class PokemonController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
 		}
 	}
+	
+	@GetMapping
+    public ResponseEntity<?> listarPokemones(
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam(defaultValue = "0") int offset) {
+        try {
+            PokemonListaDTO lista = pokemonService.listarPokemones(limit, offset);
+            return ResponseEntity.ok(lista);
+
+        } catch (IllegalArgumentException e) {
+            // Limit fuera de rango (1-50) u offset negativo -> 400 Bad Request
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+
+        } catch (RuntimeException e) {
+            // Falla en la comunicación con PokéAPI -> 502 Bad Gateway
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of("error", "Error al comunicarse con la API externa"));
+        }
+    }
+	
+	
+	
+	
+//	@GetMapping("/")
 }

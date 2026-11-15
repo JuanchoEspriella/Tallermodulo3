@@ -74,5 +74,6 @@ public class PokemonService {
 		// Consultar la API y convertir la respuesta al DTO
 		return ExternalHTTPRequestHandler.doGetAndConvertToDto(url, PokemonListaDTO.class);
 	}
+	
 
 }

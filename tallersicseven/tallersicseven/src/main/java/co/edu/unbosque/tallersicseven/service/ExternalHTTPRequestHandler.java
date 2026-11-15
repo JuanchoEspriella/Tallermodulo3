@@ -51,25 +51,29 @@ public class ExternalHTTPRequestHandler {
 
 	}
 
-	public static PokemonDTO doGetAndConvertToDto(String url) {
-		HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(url))
-				.header("Content-Type", "application/json").build();
+	public static <T> T doGetAndConvertToDto(String url, Class<T> responseType) {
+	    HttpRequest request = HttpRequest.newBuilder()
+	            .GET()
+	            .uri(URI.create(url))
+	            .header("Accept", "application/json")
+	            .build();
 
-		HttpResponse<String> response = null;
-		try {
-			response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		String json = response.body();
-		PokemonDTO fact = new GsonBuilder().create().fromJson(json, PokemonDTO.class);
+	    try {
+	        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
-		return fact;
+	        if (response.statusCode() != 200) {
+	            throw new RuntimeException("Error al consultar la API externa. Código HTTP: " + response.statusCode());
+	        }
 
+	        return new GsonBuilder().create().fromJson(response.body(), responseType);
+
+	    } catch (IOException e) {
+	        throw new RuntimeException("Error de conexión con la API externa", e);
+	    } catch (InterruptedException e) {
+	        Thread.currentThread().interrupt();
+	        throw new RuntimeException("La petición HTTP fue interrumpida", e);
+	    }
 	}
-
 	public static String doGetAndParse(String url) {
 		HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(url))
 				.header("Content-Type", "application/json").build();

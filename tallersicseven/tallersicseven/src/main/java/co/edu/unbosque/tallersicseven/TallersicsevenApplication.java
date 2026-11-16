@@ -15,6 +15,13 @@ public class TallersicsevenApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(TallersicsevenApplication.class, args);
+		
 	}
+	
+	@Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
+	
 
 }

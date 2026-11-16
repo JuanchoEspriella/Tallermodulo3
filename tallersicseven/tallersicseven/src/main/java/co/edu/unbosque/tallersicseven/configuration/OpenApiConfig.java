@@ -1,13 +1,17 @@
 package co.edu.unbosque.tallersicseven.configuration;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.responses.ApiResponse;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 
 /**
  * Configuración de OpenAPI (Swagger) para documentar la API REST. Esta clase define la información
@@ -15,7 +19,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class OpenApiConfig {
-  // Clase de configuración para la documentación OpenAPI
 
   /**
    * Define componentes reutilizables para la documentación OpenAPI. Incluye ejemplos de respuestas
@@ -52,17 +55,17 @@ public class OpenApiConfig {
             + "<p>Ahora podrás acceder a los endpoints protegidos.</p>";
 
     // Crear objeto Info con la descripción HTML
-    io.swagger.v3.oas.models.info.Info info =
-        new io.swagger.v3.oas.models.info.Info()
+    Info info =
+        new Info()
             .title("TallerSICSeven API")
             .version("1.0")
             .description(mainDescription)
-            .contact(new io.swagger.v3.oas.models.info.Contact().name("Equipo de Desarrollo"));
+            .contact(new Contact().name("Equipo de Desarrollo"));
 
     // Crear el esquema de seguridad
-    io.swagger.v3.oas.models.security.SecurityScheme securityScheme =
-        new io.swagger.v3.oas.models.security.SecurityScheme()
-            .type(io.swagger.v3.oas.models.security.SecurityScheme.Type.HTTP)
+    SecurityScheme securityScheme =
+        new SecurityScheme()
+            .type(SecurityScheme.Type.HTTP)
             .scheme("bearer")
             .bearerFormat("JWT")
             .description(securityDescription);

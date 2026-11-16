@@ -16,6 +16,14 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
+import co.edu.unbosque.tallersicseven.dto.CountriesDTO;
 
 import com.google.gson.Gson;
 
@@ -220,6 +228,167 @@ public class ExternalHTTPRequestHandler {
 			Thread.currentThread().interrupt();
 			throw new ExternalApiException("La descarga de la imagen fue interrumpida.", exception);
 		}
+	}
+
+	public static List<CountriesDTO> doGetAndConvertToDtoListCountries(String url) {
+		HttpRequest request = HttpRequest.newBuilder()
+				.GET()
+				.uri(URI.create(url))
+				.timeout(Duration.ofSeconds(15))
+				.header("Accept", "application/json")
+				.build();
+
+		try {
+			HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+
+			if (response.statusCode() == 404) {
+				return new ArrayList<>();
+			}
+
+			if (response.statusCode() != 200) {
+				throw new ExternalApiException(
+						"Error al consultar countries.dev. Código HTTP: " + response.statusCode());
+			}
+
+			JsonElement root = JsonParser.parseString(response.body());
+			List<CountriesDTO> paises = new ArrayList<>();
+
+			if (root.isJsonArray()) {
+				JsonArray elementos = root.getAsJsonArray();
+				for (JsonElement elemento : elementos) {
+					if (elemento.isJsonObject()) {
+						paises.add(convertirAPais(elemento.getAsJsonObject()));
+					}
+				}
+			} else if (root.isJsonObject()) {
+				paises.add(convertirAPais(root.getAsJsonObject()));
+			} else {
+				throw new ExternalApiException("La API de países devolvió un formato JSON inesperado.");
+			}
+
+			return paises;
+		} catch (IOException exception) {
+			throw new ExternalApiException("No fue posible conectar con countries.dev.", exception);
+		} catch (InterruptedException exception) {
+			Thread.currentThread().interrupt();
+			throw new ExternalApiException("La consulta a countries.dev fue interrumpida.", exception);
+		} catch (JsonParseException | IllegalStateException exception) {
+			throw new ExternalApiException("No fue posible interpretar la respuesta de countries.dev.", exception);
+		}
+	}
+
+	private static CountriesDTO convertirAPais(JsonObject json) {
+		CountriesDTO pais = new CountriesDTO();
+		pais.setName(obtenerTexto(json, "name"));
+		pais.setCapital(obtenerTextoFlexible(json.get("capital")));
+		pais.setPopulation(obtenerLong(json, "population"));
+		pais.setRegion(obtenerTexto(json, "region"));
+		pais.setSubregion(obtenerTexto(json, "subregion"));
+		pais.setTimezones(String.join(", ", obtenerListaTexto(json.get("timezones"))));
+
+		JsonObject flags = obtenerObjeto(json.get("flags"));
+		String bandera = obtenerTexto(flags, "png");
+		if (bandera == null) {
+			bandera = obtenerTexto(json, "flag");
+		}
+		pais.setFlag(bandera);
+
+		pais.setLanguages(String.join(", ", obtenerNombresDeObjetos(json.get("languages"), "name")));
+		pais.setCurrencies(String.join(", ", obtenerMonedas(json.get("currencies"))));
+		return pais;
+	}
+
+	private static String obtenerTexto(JsonObject objeto, String propiedad) {
+		if (objeto == null) {
+			return null;
+		}
+		JsonElement elemento = objeto.get(propiedad);
+		return elemento != null && elemento.isJsonPrimitive() ? elemento.getAsString() : null;
+	}
+
+	private static long obtenerLong(JsonObject objeto, String propiedad) {
+		if (objeto == null) {
+			return 0L;
+		}
+		JsonElement elemento = objeto.get(propiedad);
+		try {
+			return elemento != null && elemento.isJsonPrimitive() ? elemento.getAsLong() : 0L;
+		} catch (NumberFormatException exception) {
+			return 0L;
+		}
+	}
+
+	private static JsonObject obtenerObjeto(JsonElement elemento) {
+		return elemento != null && elemento.isJsonObject() ? elemento.getAsJsonObject() : null;
+	}
+
+	private static String obtenerTextoFlexible(JsonElement elemento) {
+		if (elemento == null || elemento.isJsonNull()) {
+			return null;
+		}
+		if (elemento.isJsonPrimitive()) {
+			return elemento.getAsString();
+		}
+		if (elemento.isJsonArray() && !elemento.getAsJsonArray().isEmpty()) {
+			JsonElement primero = elemento.getAsJsonArray().get(0);
+			return primero.isJsonPrimitive() ? primero.getAsString() : null;
+		}
+		return null;
+	}
+
+	private static List<String> obtenerListaTexto(JsonElement elemento) {
+		List<String> valores = new ArrayList<>();
+		if (elemento != null && elemento.isJsonArray()) {
+			for (JsonElement item : elemento.getAsJsonArray()) {
+				if (item.isJsonPrimitive()) {
+					valores.add(item.getAsString());
+				}
+			}
+		}
+		return valores;
+	}
+
+	private static List<String> obtenerNombresDeObjetos(JsonElement elemento, String propiedad) {
+		List<String> valores = new ArrayList<>();
+		if (elemento != null && elemento.isJsonArray()) {
+			for (JsonElement item : elemento.getAsJsonArray()) {
+				JsonObject objeto = obtenerObjeto(item);
+				String valor = obtenerTexto(objeto, propiedad);
+				if (valor != null && !valor.isBlank()) {
+					valores.add(valor);
+				}
+			}
+		} else if (elemento != null && elemento.isJsonObject()) {
+			for (Map.Entry<String, JsonElement> entrada : elemento.getAsJsonObject().entrySet()) {
+				if (entrada.getValue().isJsonPrimitive()) {
+					valores.add(entrada.getValue().getAsString());
+				}
+			}
+		}
+		return valores;
+	}
+
+	private static List<String> obtenerMonedas(JsonElement elemento) {
+		List<String> monedas = new ArrayList<>();
+		if (elemento != null && elemento.isJsonArray()) {
+			for (JsonElement item : elemento.getAsJsonArray()) {
+				JsonObject objeto = obtenerObjeto(item);
+				String nombre = obtenerTexto(objeto, "name");
+				String codigo = obtenerTexto(objeto, "code");
+				if (nombre != null) {
+					monedas.add(codigo == null ? nombre : nombre + " (" + codigo + ")");
+				}
+			}
+		} else if (elemento != null && elemento.isJsonObject()) {
+			for (Map.Entry<String, JsonElement> entrada : elemento.getAsJsonObject().entrySet()) {
+				JsonObject objeto = obtenerObjeto(entrada.getValue());
+				String nombre = obtenerTexto(objeto, "name");
+				if (nombre != null) {
+					monedas.add(nombre + " (" + entrada.getKey() + ")");
+				}
+			}
+		}
+		return monedas;
 	}
 
 	public static String prettyPrintUsingGson(String uglyJson) {

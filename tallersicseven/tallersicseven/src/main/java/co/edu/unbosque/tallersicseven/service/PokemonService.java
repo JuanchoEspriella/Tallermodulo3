@@ -1,6 +1,7 @@
 package co.edu.unbosque.tallersicseven.service;
 
 import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -74,5 +75,21 @@ public class PokemonService {
 		// Consultar la API y convertir la respuesta al DTO
 		return ExternalHTTPRequestHandler.doGetAndConvertToDto(url, PokemonListaDTO.class);
 	}
+<<<<<<< HEAD
+=======
+	
+	
+	
+	public PokemonDTO pokemonAleatorio() {
+		
+		int id = ThreadLocalRandom.current().nextInt(1, 1026);
+		
+		String idNew = id + "";
+		
+		return obtenerPokemon(idNew);
+		
+	}
+	
+>>>>>>> f69b7ad (Configure OpenAPI for API documentation and add random Pokemon service)
 
 }

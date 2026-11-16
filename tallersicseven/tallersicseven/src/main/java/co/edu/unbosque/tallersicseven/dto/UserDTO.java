@@ -1,66 +1,169 @@
 package co.edu.unbosque.tallersicseven.dto;
 
+import co.edu.unbosque.tallersicseven.model.enums.Role;
 import java.util.Objects;
 
-
+/**
+ * Clase de Objeto de Transferencia de Datos (DTO) para usuarios. Utilizada para transferir datos de
+ * usuario entre capas de la aplicación, especialmente en operaciones de API.
+ */
 public class UserDTO {
 
-	private Long id;
-	private String username;
-	private String password;
+  /** Identificador único del usuario. */
+  private Long id;
 
-	public UserDTO() {
-	}
+  /** Nombre de usuario para autenticación. */
+  private String username;
 
-	public UserDTO(String username, String password) {
-		this.username = username;
-		this.password = password;
-	}
+  /** Contraseña del usuario. */
+  private String password;
 
-	public Long getId() {
-		return id;
-	}
+  /** Rol del usuario en el sistema (por ejemplo, USER, ADMIN). */
+  private Role role;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+  /** Constructor por defecto. Crea una instancia vacía de UserDTO. */
+  public UserDTO() {}
 
-	public String getUsername() {
-		return username;
-	}
+  /**
+   * Constructor con nombre de usuario y contraseña.
+   *
+   * @param username Nombre de usuario
+   * @param password Contraseña del usuario
+   */
+  public UserDTO(String username, String password) {
+    this.username = username;
+    this.password = password;
+  }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+  /**
+   * Constructor con nombre de usuario, contraseña y rol.
+   *
+   * @param username Nombre de usuario
+   * @param password Contraseña del usuario
+   * @param role Rol del usuario
+   */
+  public UserDTO(String username, String password, Role role) {
+    this.username = username;
+    this.password = password;
+    this.role = role;
+  }
 
-	public String getPassword() {
-		return password;
-	}
+  /**
+   * Obtiene el identificador del usuario.
+   *
+   * @return Identificador único del usuario
+   */
+  public Long getId() {
+    return id;
+  }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+  /**
+   * Establece el identificador del usuario.
+   *
+   * @param id Identificador único a establecer
+   */
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id, password, username);
-	}
+  /**
+   * Obtiene el nombre de usuario.
+   *
+   * @return Nombre de usuario
+   */
+  public String getUsername() {
+    return username;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		UserDTO other = (UserDTO) obj;
-		return Objects.equals(id, other.id) && Objects.equals(password, other.password)
-				&& Objects.equals(username, other.username);
-	}
+  /**
+   * Establece el nombre de usuario.
+   *
+   * @param username Nombre de usuario a establecer
+   */
+  public void setUsername(String username) {
+    this.username = username;
+  }
 
-	@Override
-	public String toString() {
-		return "User [id=" + id + ", username=" + username + ", password=" + password + "]";
-	}
+  /**
+   * Obtiene la contraseña del usuario.
+   *
+   * @return Contraseña del usuario
+   */
+  public String getPassword() {
+    return password;
+  }
+
+  /**
+   * Establece la contraseña del usuario.
+   *
+   * @param password Contraseña a establecer
+   */
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  /**
+   * Obtiene el rol del usuario.
+   *
+   * @return Rol del usuario
+   */
+  public Role getRole() {
+    return role;
+  }
+
+  /**
+   * Establece el rol del usuario.
+   *
+   * @param role Rol a establecer
+   */
+  public void setRole(Role role) {
+    this.role = role;
+  }
+
+  /**
+   * Calcula el código hash para este objeto. Utilizado para almacenar objetos en colecciones
+   * basadas en hash.
+   *
+   * @return Código hash calculado
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, password, role, username);
+  }
+
+  /**
+   * Compara este objeto con otro para determinar igualdad. Dos objetos UserDTO son iguales si
+   * tienen el mismo id, username, password y role.
+   *
+   * @param obj Objeto a comparar
+   * @return true si los objetos son iguales, false en caso contrario
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    UserDTO other = (UserDTO) obj;
+    return Objects.equals(id, other.id)
+        && Objects.equals(password, other.password)
+        && role == other.role
+        && Objects.equals(username, other.username);
+  }
+
+  /**
+   * Devuelve una representación en cadena de texto de este objeto. Útil para depuración y registro.
+   *
+   * @return Representación en cadena de texto del objeto
+   */
+  @Override
+  public String toString() {
+    return "User [id="
+        + id
+        + ", username="
+        + username
+        + ", password=[PROTECTED]"
+        + ", role="
+        + role
+        + "]";
+  }
 }

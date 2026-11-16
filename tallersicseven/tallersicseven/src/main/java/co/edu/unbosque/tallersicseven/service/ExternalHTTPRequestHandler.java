@@ -1,8 +1,11 @@
 package co.edu.unbosque.tallersicseven.service;
 
 import java.io.IOException;
+import java.io.File;
 
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import java.net.http.HttpClient;
 
@@ -22,6 +25,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import co.edu.unbosque.tallersicseven.dto.PokemonDTO;
+import co.edu.unbosque.tallersicseven.exception.ExternalApiException;
 
 public class ExternalHTTPRequestHandler {
 
@@ -187,6 +191,35 @@ public class ExternalHTTPRequestHandler {
 		System.out.println("status code -> " + response.statusCode());
 
 		return prettyPrintUsingGson(response.body());
+	}
+
+
+	public static File doGetFile(String url, Path destination) {
+		HttpRequest request = HttpRequest.newBuilder()
+				.GET()
+				.uri(URI.create(url))
+				.timeout(Duration.ofSeconds(30))
+				.header("Accept", "image/*")
+				.build();
+
+		try {
+			HttpResponse<byte[]> response = HTTP_CLIENT.send(
+					request, HttpResponse.BodyHandlers.ofByteArray());
+
+			if (response.statusCode() < 200 || response.statusCode() >= 300) {
+				throw new ExternalApiException("Error al descargar la imagen. Código HTTP: " + response.statusCode());
+			}
+
+			Path destinoAbsoluto = destination.toAbsolutePath().normalize();
+			Files.createDirectories(destinoAbsoluto.getParent());
+			Files.write(destinoAbsoluto, response.body());
+			return destinoAbsoluto.toFile();
+		} catch (IOException exception) {
+			throw new ExternalApiException("No fue posible guardar la imagen descargada.", exception);
+		} catch (InterruptedException exception) {
+			Thread.currentThread().interrupt();
+			throw new ExternalApiException("La descarga de la imagen fue interrumpida.", exception);
+		}
 	}
 
 	public static String prettyPrintUsingGson(String uglyJson) {

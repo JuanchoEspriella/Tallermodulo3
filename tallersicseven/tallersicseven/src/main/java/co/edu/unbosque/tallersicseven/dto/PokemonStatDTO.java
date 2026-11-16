@@ -2,7 +2,7 @@ package co.edu.unbosque.tallersicseven.dto;
 
 public class PokemonStatDTO {
 	
-	private int bases_stat;
+	private int base_stat;
 	private int effort;
 	private NameComodinDTO stat;
 	
@@ -10,19 +10,19 @@ public class PokemonStatDTO {
 		// TODO Auto-generated constructor stub
 	}
 
-	public PokemonStatDTO(int bases_stat, int effort, NameComodinDTO stat) {
+	public PokemonStatDTO(int base_stat, int effort, NameComodinDTO stat) {
 		super();
-		this.bases_stat = bases_stat;
+		this.base_stat = base_stat;
 		this.effort = effort;
 		this.stat = stat;
 	}
 
-	public int getBases_stat() {
-		return bases_stat;
+	public int getBase_stat() {
+		return base_stat;
 	}
 
-	public void setBases_stat(int bases_stat) {
-		this.bases_stat = bases_stat;
+	public void setBase_stat(int bases_stat) {
+		this.base_stat = bases_stat;
 	}
 
 	public int getEffort() {
@@ -43,7 +43,7 @@ public class PokemonStatDTO {
 
 	@Override
 	public String toString() {
-		return "PokemonStatDTO [bases_stat=" + bases_stat + ", effort=" + effort + ", stat=" + stat + "]";
+		return "PokemonStatDTO [bases_stat=" + base_stat + ", effort=" + effort + ", stat=" + stat + "]";
 	}
 	
 	

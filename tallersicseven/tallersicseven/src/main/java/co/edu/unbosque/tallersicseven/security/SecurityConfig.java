@@ -56,6 +56,7 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/auth/**")
                     .permitAll()
+                    .requestMatchers("/api/pokemon/**").permitAll()
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
                     .permitAll()
                     .requestMatchers(

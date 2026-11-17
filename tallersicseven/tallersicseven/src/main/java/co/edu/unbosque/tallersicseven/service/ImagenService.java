@@ -2,6 +2,7 @@ package co.edu.unbosque.tallersicseven.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -86,5 +87,29 @@ public class ImagenService {
 		}
 
 		return archivo.toFile();
+	}
+	
+	public byte[] obtenerBytesFotoDirecta(String termino) {
+	    String url = apiUrl
+	            + "?key=" + URLEncoder.encode(apiKey, StandardCharsets.UTF_8)
+	            + "&q=" + URLEncoder.encode(termino, StandardCharsets.UTF_8)
+	            + "&image_type=photo"
+	            + "&per_page=3";
+
+	    PixabayResponseDTO respuesta = ExternalHTTPRequestHandler
+	            .doGetAndConvertToDto(url, PixabayResponseDTO.class);
+
+	    if (respuesta == null || respuesta.getHits() == null || respuesta.getHits().isEmpty()) {
+	        throw new ImagenNoEncontradaException("No se encontró ninguna imagen para el término: " + termino);
+	    }
+
+	    String imageUrl = respuesta.getHits().get(0).getWebformatURL();
+
+	    try {
+	        // Descarga los bytes de la imagen directamente desde la URL de Pixabay
+	        return URI.create(imageUrl).toURL().openStream().readAllBytes();
+	    } catch (IOException e) {
+	        throw new IllegalStateException("Error al descargar la imagen desde Pixabay.", e);
+	    }
 	}
 }
